@@ -1,0 +1,5 @@
+{
+  "name": "SuperPower Routine Tracker",
+  "description": "A high-performance routine tracking application with visual progress charts, drag-and-drop task management, and AI-powered productivity feedback using the Gemini API.",
+  "requestFramePermissions": []
+}
