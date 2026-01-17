@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, Trash2, CheckCircle2, Circle, TrendingUp, BrainCircuit, 
   GripVertical, Calendar, Target, Zap, LayoutDashboard, 
@@ -210,7 +210,7 @@ const App: React.FC = () => {
             {/* AI Feedback Section */}
             {!aiFeedback && !loadingAi && (
               <div className="glass-card p-10 rounded-3xl border border-dashed border-red-600/30 flex flex-col items-center justify-center text-center animate-pulse">
-                <Sparkles className="text-red-500 mb-4" size={40} />
+                <BrainCircuit className="text-red-500 mb-4" size={40} />
                 <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Ready for Analysis?</h3>
                 <p className="text-sm text-gray-500 mt-2 mb-6 font-bold max-w-sm">Click the button below to generate your performance report using the SuperPower Mentor AI.</p>
                 <button 
@@ -251,7 +251,7 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Immediate Focus Area: Full Width */}
+            {/* Immediate Focus Area */}
             <div className="glass-card p-8 rounded-3xl border border-white/10 bg-red-600/[0.02]">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -291,7 +291,7 @@ const App: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-              {/* Task Bank: Left Column */}
+              {/* Task Bank */}
               <div className="glass-card p-6 rounded-3xl border border-white/10 h-fit">
                 <div className="flex items-center gap-3 mb-6">
                   <Target className="text-red-500" size={20} />
@@ -329,7 +329,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Main Schedule: Right Column (Span 3) */}
+              {/* Main Schedule */}
               <div 
                 onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                 onDragLeave={() => setIsDragOver(false)}
@@ -351,16 +351,16 @@ const App: React.FC = () => {
                 </div>
                 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left border-collapse">
+                  <table className="w-full text-sm text-left border-collapse table-fixed">
                     <thead>
                       <tr className="bg-black/40">
-                        <th className="px-8 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest w-44">Timeline</th>
-                        <th className="px-4 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest text-center w-24">Allocation</th>
-                        <th className="px-4 py-5 text-[10px] font-black uppercase text-red-500 tracking-widest text-center w-24">Executed</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest">Strategic Objective</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest text-center w-40">Status</th>
-                        <th className="px-8 py-5 w-16"></th>
-                        <th className="px-8 py-5 w-16"></th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest w-36">Timeline</th>
+                        <th className="px-2 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest text-center w-20">Allocation</th>
+                        <th className="px-2 py-5 text-[10px] font-black uppercase text-red-500 tracking-widest text-center w-20">Executed</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest">Strategic Objective</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase text-gray-500 tracking-widest text-center w-40">Status</th>
+                        <th className="px-4 py-5 w-14"></th>
+                        <th className="px-4 py-5 w-14"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -374,49 +374,58 @@ const App: React.FC = () => {
                       {todayTasks.map((task) => (
                         <React.Fragment key={task.id}>
                           <tr className="hover:bg-white/[0.03] group transition-all duration-300">
-                            <td className="px-8 py-6">
+                            <td className="px-6 py-6">
                               <input 
                                 value={task.timeRange} 
                                 onChange={(e) => updateTask(task.id, { timeRange: e.target.value })}
                                 className="w-full bg-transparent border-none text-gray-400 font-bold focus:ring-0 p-0 text-xs tracking-tighter"
                               />
                             </td>
-                            <td className="px-4 py-6">
+                            <td className="px-2 py-6">
                               <div className="flex flex-col items-center">
                                 <input 
                                   type="number" step="0.5"
                                   value={task.hours} 
                                   onChange={(e) => updateTask(task.id, { hours: parseFloat(e.target.value) || 0 })}
-                                  className="w-16 text-center bg-white/5 border border-white/10 rounded-xl p-2 font-black text-white focus:border-red-500 transition-all outline-none"
+                                  className="w-14 text-center bg-white/5 border border-white/10 rounded-xl p-2 font-black text-white focus:border-red-500 transition-all outline-none text-xs"
                                 />
-                                <span className="text-[8px] font-black text-gray-600 mt-1">HRS</span>
+                                <span className="text-[7px] font-black text-gray-600 mt-1 uppercase">hrs</span>
                               </div>
                             </td>
-                            <td className="px-4 py-6">
+                            <td className="px-2 py-6">
                               <div className="flex flex-col items-center">
                                 <input 
                                   type="number" step="0.1"
                                   value={task.workingHrs} 
                                   placeholder="0"
                                   onChange={(e) => updateTask(task.id, { workingHrs: parseFloat(e.target.value) || 0 })}
-                                  className="w-16 text-center bg-red-600/10 border border-red-500/20 rounded-xl p-2 font-black text-red-500 focus:border-red-500 transition-all outline-none"
+                                  className="w-14 text-center bg-red-600/10 border border-red-500/20 rounded-xl p-2 font-black text-red-500 focus:border-red-500 transition-all outline-none text-xs"
                                 />
-                                <span className="text-[8px] font-black text-red-500 mt-1">DONE</span>
+                                <span className="text-[7px] font-black text-red-500 mt-1 uppercase">done</span>
                               </div>
                             </td>
-                            <td className="px-8 py-6">
-                              <input 
+                            <td className="px-6 py-6">
+                              <textarea 
                                 value={task.description} 
-                                onChange={(e) => updateTask(task.id, { description: e.target.value })}
-                                className="w-full bg-transparent border-none text-white font-black text-base focus:ring-0 p-0 tracking-tight"
+                                rows={1}
+                                onChange={(e) => {
+                                  updateTask(task.id, { description: e.target.value });
+                                  e.target.style.height = 'inherit';
+                                  e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
+                                className="w-full bg-transparent border-none text-white font-black text-sm lg:text-base focus:ring-0 p-0 tracking-tight resize-none overflow-hidden min-h-[1.5rem]"
+                                onFocus={(e) => {
+                                  e.target.style.height = 'inherit';
+                                  e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
                               />
                             </td>
-                            <td className="px-8 py-6 text-center">
+                            <td className="px-6 py-6 text-center">
                               <button 
                                 onClick={() => updateTask(task.id, { 
                                   status: task.status === TaskStatus.COMPLETED ? TaskStatus.NOT_COMPLETED : TaskStatus.COMPLETED 
                                 })}
-                                className={`px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all flex items-center justify-center gap-2 mx-auto uppercase shadow-sm ${
+                                className={`px-4 py-2.5 rounded-2xl text-[9px] font-black tracking-widest transition-all flex items-center justify-center gap-2 mx-auto uppercase shadow-sm w-full ${
                                   task.status === TaskStatus.COMPLETED 
                                     ? 'bg-green-600 text-white shadow-lg shadow-green-600/20' 
                                     : 'bg-red-600/10 text-red-500 border border-red-600/30 hover:bg-red-600 hover:text-white hover:shadow-lg hover:shadow-red-600/20'
@@ -426,20 +435,20 @@ const App: React.FC = () => {
                                 {task.status}
                               </button>
                             </td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-6">
                               <button 
                                 onClick={() => setEditingTaskNotes(editingTaskNotes === task.id ? null : task.id)}
                                 className={`p-2 rounded-lg transition-all ${editingTaskNotes === task.id ? 'bg-red-600 text-white' : 'text-gray-600 hover:text-white hover:bg-white/5'}`}
                               >
-                                <Info size={18} />
+                                <Info size={16} />
                               </button>
                             </td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-6">
                               <button 
                                 onClick={() => deleteTask(task.id)}
                                 className="text-gray-800 hover:text-red-500 transition-colors p-2"
                               >
-                                <Trash2 size={18} />
+                                <Trash2 size={16} />
                               </button>
                             </td>
                           </tr>
@@ -452,7 +461,7 @@ const App: React.FC = () => {
                                         <div className="w-1 h-8 bg-red-600 rounded-full"></div>
                                         <div>
                                           <h4 className="text-xs font-black uppercase tracking-[0.4em] text-red-500">Field Execution Intelligence</h4>
-                                          <p className="text-[10px] text-gray-500 font-bold uppercase">Detailed mission parameters for: {task.description}</p>
+                                          <p className="text-[10px] text-gray-500 font-bold uppercase">Mission parameters for: {task.description}</p>
                                         </div>
                                       </div>
                                       <button onClick={() => setEditingTaskNotes(null)} className="text-gray-600 hover:text-white bg-white/5 p-2 rounded-full transition-colors"><X size={16}/></button>
@@ -463,17 +472,17 @@ const App: React.FC = () => {
                                         <textarea 
                                           value={task.notes || ''}
                                           onChange={(e) => updateTask(task.id, { notes: e.target.value })}
-                                          placeholder="Break down the steps, list resources, or record key thoughts..."
+                                          placeholder="Break down the steps..."
                                           className="w-full h-44 bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-sm text-gray-300 focus:border-red-500/50 focus:bg-white/[0.05] outline-none resize-none transition-all shadow-inner"
                                         />
                                       </div>
                                       <div className="space-y-6">
                                         <div className="space-y-2">
-                                          <label className="text-[10px] font-black uppercase text-red-500 tracking-widest">Failure Analysis / Post-Mortem</label>
+                                          <label className="text-[10px] font-black uppercase text-red-500 tracking-widest">Failure Analysis</label>
                                           <input 
                                             value={task.reason || ''}
                                             onChange={(e) => updateTask(task.id, { reason: e.target.value })}
-                                            placeholder="What exactly went wrong? Why did you fail?"
+                                            placeholder="What went wrong?"
                                             className="w-full bg-red-600/[0.05] border border-red-600/20 rounded-xl p-5 text-sm italic text-red-400 focus:border-red-500 transition-all outline-none"
                                           />
                                         </div>
@@ -503,7 +512,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Performance Stats Cards */}
+            {/* Performance Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
                <StatCard title="Total Capacity" value={`${totalAllocatedHrs}h`} sub={`${Math.round(totalAllocatedHrs*60)}m`} color="bg-white/5" />
                <StatCard title="Net Worked" value={`${actualWorkedHrs}h`} sub={`${Math.round(actualWorkedHrs*60)}m`} color="bg-red-600 shadow-[0_15px_40px_rgba(225,29,72,0.3)] border-red-500" />
@@ -512,95 +521,67 @@ const App: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* MONTHLY ROADMAP VIEW */
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="flex items-center justify-between mb-10">
+          /* MONTHLY ROADMAP */
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1400px] mx-auto">
+             <div className="flex items-center justify-between mb-12">
                <div>
-                 <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">Strategic Roadmap</h2>
-                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-2">Long-Term Conquest Mapping</p>
+                 <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase">Strategic Roadmap</h2>
+                 <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-2">Elite Level Conquest Mapping</p>
                </div>
                <button 
                 onClick={addMonthlyGoal}
-                className="red-gradient-bg px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white flex items-center gap-3 shadow-xl shadow-red-600/20 hover:scale-105 transition-all"
+                className="red-gradient-bg px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-white flex items-center gap-4 shadow-xl shadow-red-600/20 hover:scale-105 transition-all"
                >
-                 <Plus size={20} />
+                 <Plus size={24} />
                  Initiate New Objective
                </button>
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {monthlyRoadmap.length === 0 && (
-                   <div className="col-span-full py-40 flex flex-col items-center text-center">
-                      <Milestone size={80} className="text-gray-800 mb-8" />
-                      <h3 className="text-2xl font-black text-gray-700 uppercase italic">No Strategic Objectives Set</h3>
-                      <p className="text-gray-600 text-sm mt-4 max-w-lg font-bold">The elite do not drift. They set a destination and map the route. Start your monthly planning now.</p>
-                   </div>
-                )}
+             <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
                 {monthlyRoadmap.map(goal => (
-                   <div key={goal.id} className="glass-card p-10 rounded-[2.5rem] border border-white/10 hover:border-red-500/30 transition-all group relative overflow-hidden flex flex-col">
-                      <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-110 transition-transform">
-                        <Target size={140} />
+                   <div key={goal.id} className="glass-card p-12 rounded-[3rem] border border-white/10 hover:border-red-500/30 transition-all group relative overflow-hidden flex flex-col shadow-2xl">
+                      <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:scale-110 transition-transform">
+                        <Target size={200} />
                       </div>
                       
-                      <div className="flex items-start justify-between mb-8 relative z-10">
-                        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${goal.priority === 'High' ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/20' : 'bg-white/5 text-gray-400 border-white/10'}`}>
+                      <div className="flex items-start justify-between mb-10 relative z-10">
+                        <div className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${goal.priority === 'High' ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/20' : 'bg-white/5 text-gray-400 border-white/10'}`}>
                            {goal.priority} Priority
                         </div>
-                        <button onClick={() => deleteMonthlyGoal(goal.id)} className="bg-white/5 p-2 rounded-xl text-gray-600 hover:text-red-500 hover:bg-red-600/10 transition-all"><Trash2 size={18}/></button>
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => updateMonthlyGoal(goal.id, { priority: goal.priority === 'High' ? 'Medium' : goal.priority === 'Medium' ? 'Low' : 'High' })} className="bg-white/5 p-2 rounded-xl text-gray-500 hover:text-white transition-colors"><Edit3 size={18}/></button>
+                          <button onClick={() => deleteMonthlyGoal(goal.id)} className="bg-white/5 p-2 rounded-xl text-gray-600 hover:text-red-500 transition-all"><Trash2 size={18}/></button>
+                        </div>
                       </div>
 
-                      <div className="relative z-10 flex-1">
+                      <div className="relative z-10 flex-1 space-y-6">
                         <input 
                           value={goal.title}
                           onChange={(e) => updateMonthlyGoal(goal.id, { title: e.target.value })}
-                          className="w-full bg-transparent border-none text-2xl font-[900] text-white mb-4 p-0 focus:ring-0 tracking-tighter uppercase italic"
+                          className="w-full bg-transparent border-none text-3xl font-[1000] text-white p-0 focus:ring-0 tracking-tighter uppercase italic"
+                          placeholder="MISSION TITLE..."
                         />
                         <textarea 
                           value={goal.description}
                           onChange={(e) => updateMonthlyGoal(goal.id, { description: e.target.value })}
-                          placeholder="Describe the victory conditions..."
-                          className="w-full bg-transparent border-none text-sm text-gray-500 font-bold mb-8 p-0 focus:ring-0 resize-none h-28 leading-relaxed"
+                          placeholder="STRATEGIC REQUIREMENTS..."
+                          className="w-full bg-transparent border-none text-base text-gray-400 font-bold p-0 focus:ring-0 resize-none h-56 leading-relaxed"
                         />
                       </div>
 
-                      <div className="space-y-5 pt-8 border-t border-white/10 relative z-10">
-                        <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
-                           <span className="text-gray-500">Operation Completion</span>
-                           <span className="text-red-500">{goal.progress}%</span>
+                      <div className="space-y-6 pt-10 border-t border-white/10 relative z-10 mt-8">
+                        <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest">
+                           <span className="text-gray-500">Progress</span>
+                           <span className="text-red-500 text-lg">{goal.progress}%</span>
                         </div>
-                        <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden">
-                           <div className="h-full red-gradient-bg shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-all duration-1000" style={{ width: `${goal.progress}%` }}></div>
+                        <div className="relative h-4 bg-black/40 rounded-full overflow-hidden">
+                           <div className="h-full red-gradient-bg shadow-[0_0_25px_rgba(225,29,72,0.6)] transition-all duration-1000" style={{ width: `${goal.progress}%` }}></div>
                         </div>
-                        <input 
-                          type="range"
-                          min="0" max="100"
-                          value={goal.progress}
-                          onChange={(e) => updateMonthlyGoal(goal.id, { progress: parseInt(e.target.value) })}
-                          className="w-full accent-red-600 bg-white/5 h-1.5 rounded-full appearance-none cursor-pointer"
-                        />
-                        
-                        <div className="flex items-center justify-between pt-4">
-                           <div className="flex items-center gap-3">
-                             <div className="bg-white/5 p-2 rounded-lg">
-                              <Clock size={16} className="text-red-500" />
-                             </div>
-                             <div className="flex flex-col">
-                               <span className="text-[8px] font-black uppercase text-gray-600">Deadline Alpha</span>
-                               <input 
-                                type="date"
-                                value={goal.deadline}
-                                onChange={(e) => updateMonthlyGoal(goal.id, { deadline: e.target.value })}
-                                className="bg-transparent border-none text-[11px] font-black text-white p-0 focus:ring-0 cursor-pointer"
-                               />
-                             </div>
-                           </div>
-                           <div className="flex items-center gap-2">
-                             <button 
-                              onClick={() => updateMonthlyGoal(goal.id, { priority: goal.priority === 'High' ? 'Medium' : goal.priority === 'Medium' ? 'Low' : 'High' })}
-                              className="text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
-                             >
-                               Cycle Priority
-                             </button>
+                        <input type="range" min="0" max="100" value={goal.progress} onChange={(e) => updateMonthlyGoal(goal.id, { progress: parseInt(e.target.value) })} className="w-full accent-red-600 bg-white/5 h-2 rounded-full appearance-none cursor-pointer" />
+                        <div className="flex items-center justify-between pt-6">
+                           <div className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5">
+                             <Clock size={20} className="text-red-500" />
+                             <input type="date" value={goal.deadline} onChange={(e) => updateMonthlyGoal(goal.id, { deadline: e.target.value })} className="bg-transparent border-none text-[13px] font-black text-white p-0 focus:ring-0" />
                            </div>
                         </div>
                       </div>
