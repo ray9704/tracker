@@ -3,39 +3,40 @@ import { GoogleGenAI } from "@google/genai";
 import { Task, TaskStatus } from "../types";
 
 export const getAIProductivityFeedback = async (tasks: Task[]) => {
-  // Always use {apiKey: process.env.API_KEY} for initialization as per guidelines
+  // Use named parameter for API Key
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const completed = tasks.filter(t => t.status === TaskStatus.COMPLETED).length;
   const total = tasks.length;
   
   const taskSummary = tasks.map(t => 
-    `- [${t.status}] ${t.description} (${t.hours}h). Reason for failure: ${t.reason || 'None specified'}`
+    `- [${t.status}] ${t.description} (${t.hours}h). Reason: ${t.reason || 'N/A'}`
   ).join('\n');
 
-  const prompt = `You are a strict but high-performance mentor for a student. Your persona is "The SuperPower Mentor". 
-  Evaluate their day based on these tasks:
+  const prompt = `You are "The SuperPower Mentor" for Rayyan. 
+  Evaluate today's performance:
   Total Tasks: ${total}
   Completed: ${completed}
   
-  Tasks List:
+  Task Data:
   ${taskSummary}
   
-  Respond in Roman Urdu (Urdu written in Latin script). 
-  BE VERY FIRM AND MENTOR-LIKE. If they missed tasks, be disappointed but motivational. 
-  Remind them that their parents are waiting for their success and time is running out. 
-  Talk about using their "Brain as a Weapon". 
-  Keep the feedback concise, powerful, and under 100 words.`;
+  Respond in Roman Urdu (Latin script). 
+  PERSONA: Disappointed but extremely motivational.
+  MESSAGE: Rayyan, you MUST provide that Villa and Rolls Royce for your parents soon. 
+  Time is limited. Use your brain as a weapon.
+  Keep it under 80 words, sharp and lethal.`;
 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
     });
-    // response.text is a property, not a method
-    return response.text;
+    
+    // Use .text property directly
+    return response?.text || "Mission data processed. Keep moving, Commander.";
   } catch (error) {
-    console.error("Gemini Error:", error);
-    return "Feedback system offline. Stay focused, commander.";
+    console.error("AI Logic Error:", error);
+    return "AI Uplink Interrupted. Remember your parents' dreams. Stay on the path.";
   }
 };

@@ -3,19 +3,30 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, Trash2, CheckCircle2, Circle, TrendingUp, BrainCircuit, 
   GripVertical, Calendar, Target, Zap, LayoutDashboard, 
-  Milestone, ChevronRight, Info, Save, X, Edit3, Clock, Sparkles
+  Milestone, ChevronRight, Info, Save, X, Edit3, Clock, Sparkles,
+  Lock, User, Eye, EyeOff, LogIn, Database, CloudOff, RefreshCw
 } from 'lucide-react';
 import { Task, TaskStatus, SidebarTask, MonthlyGoal } from './types';
 import MotivationalQuote from './components/MotivationalQuote';
 import PerformanceCharts from './components/PerformanceCharts';
 import { getAIProductivityFeedback } from './services/geminiService';
+import { supabase, isSupabaseConfigured } from './services/supabase';
 
 const STORAGE_KEY = 'superpower_routine_tasks_v2';
 const GOALS_KEY = 'superpower_routine_goals_v2';
 const MONTHLY_ROADMAP_KEY = 'superpower_monthly_roadmap_v2';
 const QUICK_TASKS_KEY = 'superpower_quick_tasks_v2';
+const AUTH_KEY = 'superpower_auth_status';
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error' | 'success'>('idle');
+
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [sidebarTasks, setSidebarTasks] = useState<SidebarTask[]>([]);
@@ -29,33 +40,79 @@ const App: React.FC = () => {
 
   // Load Data
   useEffect(() => {
-    const savedTasks = localStorage.getItem(STORAGE_KEY);
-    const savedSidebar = localStorage.getItem(GOALS_KEY);
-    const savedRoadmap = localStorage.getItem(MONTHLY_ROADMAP_KEY);
-    const savedQuickTasks = localStorage.getItem(QUICK_TASKS_KEY);
-    
-    if (savedTasks) setTasks(JSON.parse(savedTasks));
-    if (savedSidebar) setSidebarTasks(JSON.parse(savedSidebar));
-    if (savedRoadmap) setMonthlyRoadmap(JSON.parse(savedRoadmap));
-    if (savedQuickTasks) setQuickTasks(JSON.parse(savedQuickTasks));
+    const initApp = async () => {
+      const savedAuth = localStorage.getItem(AUTH_KEY);
+      if (savedAuth === 'true') setIsAuthenticated(true);
+
+      const savedTasks = localStorage.getItem(STORAGE_KEY);
+      const savedSidebar = localStorage.getItem(GOALS_KEY);
+      const savedRoadmap = localStorage.getItem(MONTHLY_ROADMAP_KEY);
+      const savedQuickTasks = localStorage.getItem(QUICK_TASKS_KEY);
+      
+      if (savedTasks) setTasks(JSON.parse(savedTasks));
+      if (savedSidebar) setSidebarTasks(JSON.parse(savedSidebar));
+      if (savedRoadmap) setMonthlyRoadmap(JSON.parse(savedRoadmap));
+      if (savedQuickTasks) setQuickTasks(JSON.parse(savedQuickTasks));
+
+      // Attempt initial sync if cloud is configured
+      if (isSupabaseConfigured()) {
+        syncFromCloud();
+      }
+    };
+    initApp();
   }, []);
 
-  // Save Data
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  }, [tasks]);
+  // Save Data locally
+  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }, [tasks]);
+  useEffect(() => { localStorage.setItem(GOALS_KEY, JSON.stringify(sidebarTasks)); }, [sidebarTasks]);
+  useEffect(() => { localStorage.setItem(MONTHLY_ROADMAP_KEY, JSON.stringify(monthlyRoadmap)); }, [monthlyRoadmap]);
+  useEffect(() => { localStorage.setItem(QUICK_TASKS_KEY, JSON.stringify(quickTasks)); }, [quickTasks]);
 
-  useEffect(() => {
-    localStorage.setItem(GOALS_KEY, JSON.stringify(sidebarTasks));
-  }, [sidebarTasks]);
+  const syncFromCloud = async () => {
+    setSyncStatus('syncing');
+    try {
+      const { data: dbTasks, error: tError } = await supabase.from('tasks').select('*');
+      if (tError) throw tError;
+      if (dbTasks) setTasks(dbTasks);
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+    } catch (err) {
+      console.error("Cloud fetch error:", err);
+      setSyncStatus('error');
+    }
+  };
 
-  useEffect(() => {
-    localStorage.setItem(MONTHLY_ROADMAP_KEY, JSON.stringify(monthlyRoadmap));
-  }, [monthlyRoadmap]);
+  const syncToCloud = async () => {
+    if (!isSupabaseConfigured()) return;
+    setSyncStatus('syncing');
+    try {
+      const { error } = await supabase.from('tasks').upsert(tasks);
+      if (error) throw error;
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+    } catch (err) {
+      console.error("Cloud sync error:", err);
+      setSyncStatus('error');
+    }
+  };
 
-  useEffect(() => {
-    localStorage.setItem(QUICK_TASKS_KEY, JSON.stringify(quickTasks));
-  }, [quickTasks]);
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Specific credentials for Rayyan
+    if (username === 'rayyan_zahoor' && password === 'D@er9705') {
+      setIsAuthenticated(true);
+      localStorage.setItem(AUTH_KEY, 'true');
+      setShowLoginModal(false);
+      setLoginError('');
+    } else {
+      setLoginError('Access Denied. Incorrect credentials.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem(AUTH_KEY);
+  };
 
   const generateAIFeedback = async () => {
     setLoadingAi(true);
@@ -91,19 +148,6 @@ const App: React.FC = () => {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
-  const updateSidebarTask = (id: string, updates: Partial<SidebarTask>) => {
-    setSidebarTasks(sidebarTasks.map(t => t.id === id ? { ...t, ...updates } : t));
-  };
-
-  const deleteSidebarTask = (id: string) => {
-    setSidebarTasks(sidebarTasks.filter(t => t.id !== id));
-  };
-
-  const addSidebarTask = () => {
-    setSidebarTasks([...sidebarTasks, { id: crypto.randomUUID(), description: 'New Focus Area', status: 'Priority' }]);
-  };
-
-  // Monthly Roadmap Functions
   const addMonthlyGoal = () => {
     const newGoal: MonthlyGoal = {
       id: crypto.randomUUID(),
@@ -124,7 +168,6 @@ const App: React.FC = () => {
     setMonthlyRoadmap(monthlyRoadmap.filter(g => g.id !== id));
   };
 
-  // Drag and Drop Logic
   const handleDragStart = (e: React.DragEvent, taskName: string) => {
     e.dataTransfer.setData('text/plain', taskName);
   };
@@ -141,9 +184,9 @@ const App: React.FC = () => {
   const totalAllocatedHrs = todayTasks.reduce((sum, t) => sum + t.hours, 0);
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 bg-[#050505]">
       {/* Premium Navigation */}
-      <nav className="glass-card sticky top-0 z-[100] px-8 py-5 border-b border-white/5 shadow-2xl">
+      <nav className="glass-card sticky top-0 z-[100] px-8 py-5 border-b border-white/5 shadow-2xl backdrop-blur-md">
         <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 red-gradient-bg rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20">
@@ -153,7 +196,9 @@ const App: React.FC = () => {
               <h1 className="text-2xl font-[900] tracking-tighter text-white uppercase italic">
                 Super<span className="text-red-500">Power</span>
               </h1>
-              <p className="text-[10px] font-bold text-gray-500 tracking-[0.3em] uppercase">Routine Intelligence v4.0</p>
+              <p className="text-[10px] font-bold text-gray-500 tracking-[0.3em] uppercase">
+                {isAuthenticated ? 'Commander Mode Active' : 'Routine Intelligence v4.0'}
+              </p>
             </div>
           </div>
           
@@ -176,6 +221,14 @@ const App: React.FC = () => {
              </div>
 
             <div className="flex items-center gap-3">
+              <button 
+                onClick={syncToCloud}
+                className={`p-2.5 rounded-xl bg-white/5 border border-white/10 transition-all ${syncStatus === 'syncing' ? 'text-yellow-500' : syncStatus === 'error' ? 'text-red-500' : 'text-gray-400 hover:text-white'}`}
+                title="Sync to Cloud"
+              >
+                {syncStatus === 'syncing' ? <RefreshCw className="animate-spin" size={18}/> : <Database size={18}/>}
+              </button>
+
               <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
                 <div className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-400">
                   <Calendar size={16} className="text-red-500" />
@@ -183,10 +236,29 @@ const App: React.FC = () => {
                     type="date" 
                     value={currentDate}
                     onChange={(e) => setCurrentDate(e.target.value)}
-                    className="bg-transparent border-none focus:ring-0 outline-none text-white cursor-pointer"
+                    className="bg-transparent border-none focus:ring-0 outline-none text-white cursor-pointer w-32"
                   />
                 </div>
               </div>
+
+              {isAuthenticated ? (
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 text-gray-400 border border-white/10 hover:text-red-500 transition-all text-xs font-black uppercase"
+                >
+                  <User size={16} className="text-red-500" />
+                  Logout
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl red-gradient-bg text-white shadow-lg shadow-red-600/20 text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                >
+                  <LogIn size={16} />
+                  Login
+                </button>
+              )}
+
               <button 
                 onClick={generateAIFeedback} 
                 disabled={loadingAi}
@@ -199,6 +271,78 @@ const App: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl">
+          <div className="w-full max-w-md glass-card p-12 rounded-[3rem] border border-white/10 animate-in zoom-in duration-300 relative">
+            <button 
+              onClick={() => setShowLoginModal(false)}
+              className="absolute top-8 right-8 text-gray-500 hover:text-white"
+            >
+              <X size={24}/>
+            </button>
+            
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 red-gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-red-600/30">
+                <Lock className="text-white" size={32} />
+              </div>
+              <h2 className="text-3xl font-[1000] text-white italic uppercase tracking-tighter">Identity Gate</h2>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-2">Enter Commander Credentials</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Commander ID</label>
+                <div className="relative">
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                  <input 
+                    type="text" 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white font-bold placeholder:text-gray-700 outline-none focus:border-red-500/50 transition-all" 
+                    placeholder="rayyan_zahoor" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Secret Key</label>
+                <div className="relative">
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-14 text-white font-bold placeholder:text-gray-700 outline-none focus:border-red-500/50 transition-all" 
+                    placeholder="••••••••" 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+                  </button>
+                </div>
+              </div>
+
+              {loginError && (
+                <div className="p-4 bg-red-600/10 border border-red-600/20 rounded-xl text-center">
+                  <p className="text-red-500 text-[10px] font-black uppercase tracking-widest">{loginError}</p>
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="w-full red-gradient-bg py-5 rounded-2xl text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Verify Commander
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-[1600px] mx-auto px-8 mt-12">
         <MotivationalQuote />
@@ -250,45 +394,6 @@ const App: React.FC = () => {
                  </div>
               </div>
             )}
-
-            {/* Immediate Focus Area */}
-            <div className="glass-card p-8 rounded-3xl border border-white/10 bg-red-600/[0.02]">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="text-red-500" size={24} />
-                  <div>
-                    <h3 className="font-black text-xl text-white italic uppercase tracking-tighter">Immediate Focus Control</h3>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Mission Critical Priorities</p>
-                  </div>
-                </div>
-                <button onClick={addSidebarTask} className="red-gradient-bg p-2 rounded-xl text-white hover:scale-110 transition-transform shadow-lg shadow-red-600/20"><Plus size={20}/></button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {sidebarTasks.length === 0 && (
-                  <div className="col-span-full py-10 text-center border border-dashed border-white/5 rounded-2xl">
-                    <p className="text-gray-600 text-xs font-black uppercase">No priorities active. Add one now.</p>
-                  </div>
-                )}
-                {sidebarTasks.map(goal => (
-                  <div key={goal.id} className="p-6 bg-black/40 border border-white/5 rounded-2xl group hover:border-red-500/30 transition-all relative">
-                    <input 
-                      value={goal.description} 
-                      onChange={(e) => updateSidebarTask(goal.id, { description: e.target.value })}
-                      className="w-full bg-transparent border-none text-base font-black text-white p-0 focus:ring-0 mb-1"
-                    />
-                    <div className="flex items-center justify-between">
-                      <input 
-                        value={goal.status} 
-                        onChange={(e) => updateSidebarTask(goal.id, { status: e.target.value })}
-                        className="bg-transparent border-none text-[10px] text-red-500 font-black p-0 focus:ring-0 uppercase tracking-widest"
-                      />
-                      <button onClick={() => deleteSidebarTask(goal.id)} className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-500 transition-opacity"><Trash2 size={14}/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
               {/* Task Bank */}
@@ -414,10 +519,6 @@ const App: React.FC = () => {
                                   e.target.style.height = `${e.target.scrollHeight}px`;
                                 }}
                                 className="w-full bg-transparent border-none text-white font-black text-sm lg:text-base focus:ring-0 p-0 tracking-tight resize-none overflow-hidden min-h-[1.5rem]"
-                                onFocus={(e) => {
-                                  e.target.style.height = 'inherit';
-                                  e.target.style.height = `${e.target.scrollHeight}px`;
-                                }}
                               />
                             </td>
                             <td className="px-6 py-6 text-center">
@@ -517,7 +618,7 @@ const App: React.FC = () => {
                <StatCard title="Total Capacity" value={`${totalAllocatedHrs}h`} sub={`${Math.round(totalAllocatedHrs*60)}m`} color="bg-white/5" />
                <StatCard title="Net Worked" value={`${actualWorkedHrs}h`} sub={`${Math.round(actualWorkedHrs*60)}m`} color="bg-red-600 shadow-[0_15px_40px_rgba(225,29,72,0.3)] border-red-500" />
                <StatCard title="Focus Quotient" value={`${totalAllocatedHrs > 0 ? Math.round((actualWorkedHrs/totalAllocatedHrs)*100) : 0}%`} sub="Efficiency Index" color="bg-white/5" />
-               <StatCard title="Mental Power" value="98.2" sub="Optimized" color="bg-white/5" />
+               <StatCard title="Cloud Status" value={isSupabaseConfigured() ? "LINKED" : "OFFLINE"} sub="Data Shield" color="bg-white/5" />
             </div>
           </div>
         ) : (
@@ -606,5 +707,5 @@ const StatCard = ({ title, value, sub, color }: { title: string, value: string, 
     </div>
   </div>
 );
-
+//  l
 export default App;

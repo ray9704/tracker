@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Registration Form</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 30px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            background: #f2f2f2;
+            padding: 10px;
+            border-left: 5px solid #333;
+            margin-top: 40px;
+            font-size: 1.2rem;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        input[type="date"],
+        input[type="email"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+        textarea {
+            height: 100px;
+        }
+        .small {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .upload-wrapper {
+            background: #fcfcfc;
+            padding: 10px;
+            border: 1px dashed #ddd;
+            margin-top: 5px;
+        }
+        .other-input {
+            display: none;
+            margin-top: 10px;
+            border-left: 3px solid #3498db;
+            padding-left: 10px;
+        }
+        .submit-btn {
+            background-color: #333;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background-color: #555;
+        }
+        .required {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Business Registration Form</h1>
+
+    <form id="regForm">
+        <!-- Section 1: Basic Company Details & Business Info -->
+        <div class="section">
+            <h2>🏢 Section 1: Basic Company Details & Business Info</h2>
+
+            <label>Company Name:</label>
+            <input type="text" name="company_name" required>
+
+            <!-- NTN with Image Upload -->
+            <label>NTN Number: <span class="required">(Required)</span></label>
+            <input type="text" name="ntn_number" placeholder="Enter National Tax Number" required>
+            <div class="upload-wrapper">
+                <span class="small">Upload NTN Certificate Image:</span>
+                <input type="file" name="ntn_image" accept="image/*">
+            </div>
+
+            <!-- STRN with Image Upload -->
+            <label>STRN (GST) Number: <span class="small">(Optional for purely commercial exporters)</span></label>
+            <input type="text" name="strn_number" placeholder="Enter Sales Tax Registration Number">
+            <div class="upload-wrapper">
+                <span class="small">Upload STRN Certificate Image:</span>
+                <input type="file" name="strn_image" accept="image/*">
+            </div>
+
+            <label>PSW ID (Pakistan Single Window): <span class="required">(Required for clearance)</span></label>
+            <input type="text" name="psw_id" placeholder="Enter PSW ID" required>
+
+            <label>Chamber of Commerce Name:</label>
+            <input type="text" name="chamber_name" placeholder="e.g., KCCI, SCCI, LCCI">
+            <div class="small">(e.g., ICCI, KCCI, SCCI, LCCI)</div>
+
+            <label>Chamber Membership Number:</label>
+            <input type="text" name="chamber_membership_no" placeholder="Enter Membership Number">
+
+            <label>Business Type (Select one):</label>
+            <select name="business_type" onchange="toggleOther(this, 'other_business_type_div')">
+                <option value="">-- Select Type --</option>
+                <option value="Agents">Agents</option>
+                <option value="Association">Association</option>
+                <option value="Business Services">Business Services</option>
+                <option value="Buying office">Buying office</option>
+                <option value="Distributors/Wholesalers">Distributors/Wholesalers</option>
+                <option value="Exporters">Exporters</option>
+                <option value="Importers">Importers</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Trading">Trading</option>
+                <option value="Others">Others</option>
+            </select>
+            <div id="other_business_type_div" class="other-input">
+                <label>Please define "Other" Business Type:</label>
+                <input type="text" name="other_business_type">
+            </div>
+
+            <label>Main Markets (Check all that apply):</label>
+            <select name="main_markets" onchange="toggleOther(this, 'other_market_div')">
+                <option value="">-- Select Market --</option>
+                <option value="Americas">Americas</option>
+                <option value="Africa">Africa</option>
+                <option value="Asia">Asia</option>
+                <option value="Caribbean">Caribbean</option>
+                <option value="Europe">Europe</option>
+                <option value="Middle East">Middle East</option>
+                <option value="Oceania">Oceania</option>
+                <option value="Worldwide">Worldwide</option>
+                <option value="Other">Other</option>
+            </select>
+            <div id="other_market_div" class="other-input">
+                <label>Please define "Other" Market:</label>
+                <input type="text" name="other_market">
+            </div>
+
+            <label>Industry (Select Primary):</label>
+            <select name="industry" onchange="toggleOther(this, 'other_industry_div')">
+                <option value="">-- Select Industry --</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Apparel & Fashion">Apparel & Fashion</option>
+                <option value="Automobiles & Motorcycles">Automobiles & Motorcycles</option>
+                <option value="Chemicals">Chemicals</option>
+                <option value="Construction & Real Estate">Construction & Real Estate</option>
+                <option value="Electronics & Electrical">Electronics & Electrical</option>
+                <option value="Food & Beverage">Food & Beverage</option>
+                <option value="Health & Medical">Health & Medical</option>
+                <option value="Industrial Machinery">Industrial Machinery</option>
+                <option value="IT & Software">IT & Software</option>
+                <option value="Textiles">Textiles</option>
+                <option value="Sports & Entertainment">Sports & Entertainment</option>
+                <option value="Other">Other</option>
+            </select>
+            <div id="other_industry_div" class="other-input">
+                <label>Please define "Other" Industry:</label>
+                <input type="text" name="other_industry">
+            </div>
+
+            <label>Key Products & Services:</label>
+            <input type="text" name="key_products">
+            <div class="small">(Please separate words by commas)</div>
+
+            <label>Category:</label>
+            <input type="text" name="category">
+
+            <label>Company Employees:</label>
+            <select name="employee_count">
+                <option value="">-- Select Employee Range --</option>
+                <option value="1-5">1-5</option>
+                <option value="6-10">6-10</option>
+                <option value="11-15">11-15</option>
+                <option value="16-25">16-25</option>
+                <option value="26-50">26-50</option>
+                <option value="51-100">51-100</option>
+                <option value="101-250">101-250</option>
+                <option value="251-500">251-500</option>
+            </select>
+
+            <label>Year Established (Range: 1920 – 2026):</label>
+            <input type="number" name="year_established" min="1920" max="2026">
+
+            <label>Company Introduction:</label>
+            <textarea name="company_intro" maxlength="20000"></textarea>
+            <div class="small">(Max 20,000 characters)</div>
+        </div>
+
+        <!-- Section 2: Online Presence & Payments -->
+        <div class="section">
+            <h2>🌐 Section 2: Online Presence & Payments</h2>
+
+            <label>Accepted Payment Currency:</label>
+            <input type="text" name="payment_currency" placeholder="e.g., USD, PKR, EUR">
+
+            <label>Accepted Payment Terms/Method:</label>
+            <select name="payment_method" onchange="toggleOther(this, 'other_payment_div')">
+                <option value="">-- Select Payment Method --</option>
+                <option value="Letter of Credit (L/C)">1. Letter of Credit (L/C)</option>
+                <option value="Registered Contract (RC)">2. Registered Contract (RC)</option>
+                <option value="Documentary Collection (D/C)">3. Documentary Collection (D/C)</option>
+                <option value="Open Account (OA)">4. Open Account (OA)</option>
+                <option value="Advance Payment (AP)">5. Advance Payment (AP)</option>
+                <option value="Others">Others</option>
+            </select>
+            <div id="other_payment_div" class="other-input">
+                <label>Please define "Other" Payment Method:</label>
+                <input type="text" name="other_payment_method">
+            </div>
+
+            <label>Website:</label>
+            <input type="url" name="website" placeholder="http://">
+
+            <label>Company Logo:</label>
+            <input type="file" name="company_logo" accept=".jpg,.png,.gif">
+            <div class="small">(Upload JPG/PNG/GIF - Max 2MB)</div>
+
+            <label>Company Brochures:</label>
+            <input type="file" name="company_brochure">
+
+            <label>Company Video:</label>
+            <input type="url" name="company_video">
+            <div class="small">(Paste YouTube or Youku URL)</div>
+
+            <label>Paid member at another B2B portal?</label>
+            <select name="b2b_member">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+            </select>
+
+            <label>Portal Expiry Date:</label>
+            <input type="date" name="portal_expiry">
+        </div>
+
+        <!-- Section 3: Factory Information -->
+        <div class="section">
+            <h2>🏭 Section 3: Factory Information</h2>
+
+            <label>Factory Location:</label>
+            <input type="text" name="factory_location">
+
+            <label>Factory Size:</label>
+            <select name="factory_size">
+                <option value="">-- Select Size --</option>
+                <option value="Below 1000 sqm">Below 1000 sqm</option>
+                <option value="1000–3000 sqm">1000–3000 sqm</option>
+                <option value="3000–5000 sqm">3000–5000 sqm</option>
+                <option value="5000–10000 sqm">5000–10000 sqm</option>
+                <option value="10000–250000 sqm">10000–250000 sqm</option>
+                <option value="Above 1,000,000 sqm">Above 1,000,000 sqm</option>
+            </select>
+
+            <label>No. of Production Lines (Select 0–20):</label>
+            <input type="number" name="production_lines" min="0" max="20">
+
+            <label>Total Annual Purchase Volume (Million USD):</label>
+            <select name="purchase_volume">
+                <option value="">-- Select Volume --</option>
+                <option value="< 1">&lt; 1</option>
+                <option value="1–2.5">1–2.5</option>
+                <option value="2.5–10">2.5–10</option>
+                <option value="10–25">10–25</option>
+                <option value="25–50">25–50</option>
+                <option value="50–100">50–100</option>
+                <option value="> 100">&gt; 100</option>
+            </select>
+
+            <label>R&amp;D Staff Count:</label>
+            <input type="text" name="rd_staff_count">
+
+            <label>Quality Control:</label>
+            <select name="quality_control">
+                <option value="No">No</option>
+                <option value="In House">In House</option>
+                <option value="Third Parties">Third Parties</option>
+            </select>
+
+            <label>QC Staff Count:</label>
+            <input type="text" name="qc_staff_count">
+
+            <label>Certificates:</label>
+            <input type="text" name="certificates">
+            <div class="small">(e.g., ISO-9001, Reg No: RBZ33941)</div>
+
+            <label>Contract Manufacturing:</label>
+            <select name="contract_manufacturing">
+                <option value="">-- Select Service --</option>
+                <option value="OEM Service Offered">OEM Service Offered</option>
+                <option value="Design Service Offered">Design Service Offered</option>
+                <option value="Buyer Label Offered">Buyer Label Offered</option>
+            </select>
+        </div>
+
+        <!-- Section 4: Financials & Legal -->
+        <div class="section">
+            <h2>📊 Section 4: Financials & Legal</h2>
+
+            <label>Registered Capital (Million USD):</label>
+            <select name="registered_capital">
+                <option value="">-- Select Capital --</option>
+                <option value="< 1">&lt; 1</option>
+                <option value="1–2.5">1–2.5</option>
+                <option value="2.5–10">2.5–10</option>
+                <option value="10–25">10–25</option>
+                <option value="25–50">25–50</option>
+                <option value="50–100">50–100</option>
+                <option value="> 100">&gt; 100</option>
+            </select>
+
+            <label>Ownership Type:</label>
+            <select name="ownership_type" onchange="toggleOther(this, 'other_ownership_div')">
+                <option value="">-- Select Ownership --</option>
+                <option value="LLC">LLC</option>
+                <option value="Partnership">Partnership</option>
+                <option value="Corporation">Corporation</option>
+                <option value="Sole Proprietorship">Sole Proprietorship</option>
+                <option value="Others">Others</option>
+            </select>
+            <div id="other_ownership_div" class="other-input">
+                <label>Please define "Other" Ownership:</label>
+                <input type="text" name="other_ownership">
+            </div>
+
+            <label>Legal Representative / CEO:</label>
+            <input type="text" name="legal_rep">
+
+            <label>Total Annual Sales Volume (Million USD):</label>
+            <select name="sales_volume">
+                <option value="">-- Select Sales Volume --</option>
+                <option value="< 1">&lt; 1</option>
+                <option value="1–2.5">1–2.5</option>
+                <option value="2.5–10">2.5–10</option>
+                <option value="10–25">10–25</option>
+                <option value="25–50">25–50</option>
+                <option value="50–100">50–100</option>
+                <option value="> 100">&gt; 100</option>
+            </select>
+
+            <label>Export Percentage (%):</label>
+            <input type="number" name="export_percentage" min="0" max="100">
+        </div>
+
+        <!-- Section 5: Trade Alerts -->
+        <div class="section">
+            <h2>🔔 Section 5: Trade Alerts</h2>
+            <label>Keywords for Email Alerts:</label>
+            <input type="text" name="trade_keywords">
+            <div class="small">(Separate by commas)</div>
+        </div>
+
+        <!-- Section 7: Digital Presence & Contact -->
+        <div class="section">
+            <h2>Digital Presence & Contact</h2>
+
+            <label>Authorized Person Name:</label>
+            <input type="text" name="auth_person_name">
+
+            <label>Designation:</label>
+            <input type="text" name="designation">
+            <div class="small">(e.g., CEO, Export Manager)</div>
+
+            <label>Verified WhatsApp Number:</label>
+            <input type="text" name="whatsapp_no">
+            <div class="small">(Crucial for Pakistani trade)</div>
+
+            <label>Business Email:</label>
+            <input type="email" name="business_email">
+            <div class="small">(Verify via OTP)</div>
+
+            <label>Website URL:</label>
+            <input type="url" name="website_url">
+            
+            <label>Social Media URLs (Optional):</label>
+            <input type="url" name="facebook_url" placeholder="Facebook URL" style="margin-bottom: 5px;">
+            <input type="url" name="instagram_url" placeholder="Instagram URL" style="margin-bottom: 5px;">
+            <input type="url" name="youtube_url" placeholder="Youtube URL">
+        </div>
+
+        <button type="submit" class="submit-btn">Register Business</button>
+    </form>
+</div>
+
+<script>
+    function toggleOther(select, divId) {
+        const otherDiv = document.getElementById(divId);
+        // Supports both 'Others' and 'Other' values
+        if (select.value === 'Others' || select.value === 'Other') {
+            otherDiv.style.display = 'block';
+        } else {
+            otherDiv.style.display = 'none';
+        }
+    }
+
+    document.getElementById('regForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Form submitted successfully!');
+    });
+</script>
+
+</body>
+</html>
